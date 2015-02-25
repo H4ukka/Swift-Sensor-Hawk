@@ -3,9 +3,11 @@
 
 typedef int (*FP)(short);
 
-struct MasterSensor {
-    MasterSensor (FP);
+class MasterSensor {
+public:
+	MasterSensor (FP);
 
+	/* Methods */
     int measure ();
 
 private:

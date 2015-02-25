@@ -17,8 +17,9 @@
     -
 */
 
-#include "hardware.h"
+
 #include "MasterSensor.h"
+#include "hardware.h"
 
 MasterSensor SensorMaster (_get_adc);
 

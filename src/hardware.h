@@ -23,8 +23,6 @@
     A6 | B0110  | 6
     A7 | B0111  | 7
 */
-
-typedef int (*FP)(short);
     
 int get_adc (short channel) {
 
