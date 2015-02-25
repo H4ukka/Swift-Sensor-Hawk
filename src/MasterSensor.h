@@ -5,13 +5,13 @@ typedef int (*FP)(short);
 
 class MasterSensor {
 public:
-	MasterSensor (FP);
+    MasterSensor (FP);
 
-	/* Methods */
+    /* Methods */
     int measure ();
 
 private:
-	FP _adcp;
+    FP _adcp;
 };
 
 #endif
