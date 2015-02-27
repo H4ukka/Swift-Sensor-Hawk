@@ -1,8 +1,8 @@
 #include "MasterSensor.h"
 
-MasterSensor::MasterSensor (FP adcp) { _adcp = adcp;}
+MasterSensor::MasterSensor (function_pointer adcp) { adcp_ = adcp;}
 
 int MasterSensor::measure () {
     
-    return _adcp(3);
+    return adcp_(3);
 }

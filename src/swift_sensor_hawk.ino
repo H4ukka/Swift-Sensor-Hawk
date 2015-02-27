@@ -17,11 +17,10 @@
     -
 */
 
-
 #include "MasterSensor.h"
 #include "hardware.h"
 
-MasterSensor SensorMaster (_get_adc);
+MasterSensor SensorMaster (g_get_adc);
 
 void setup () {
 

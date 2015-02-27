@@ -6,9 +6,8 @@
 */
 
 /*
-    Analog to Digital conversion function; you give it a channel code as a nibble
-    and it'll spit out a value between (0 -> 1023) representing that channels current
-    voltage level
+    Analog to Digital conversion function; you give it a channel code as a nibble (or short!)
+    and it'll spit out a value between (0 -> 1023) representing that channels current voltage level
 
     ATMega328 ADC pins:
 
@@ -36,4 +35,4 @@ int get_adc (short channel) {
     return ADC;                                 // Once we're done return the contents of the ADC register
 }
 
-FP _get_adc = get_adc;
+function_pointer g_get_adc = get_adc;

@@ -1,17 +1,19 @@
 #ifndef MASTER_SENSOR_H
 #define MASTER_SENSOR_H
 
-typedef int (*FP)(short);
+/* Typedef for function pointers */
+
+typedef int (*function_pointer)(short);
 
 class MasterSensor {
 public:
-    MasterSensor (FP);
+    MasterSensor (function_pointer);
 
     /* Methods */
     int measure ();
 
 private:
-    FP _adcp;
+    function_pointer adcp_;
 };
 
 #endif
