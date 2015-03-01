@@ -14,7 +14,7 @@
     laine.antti.e@gmail.com
 
     TODO:
-    -
+    - 
 */
 
 #include "MasterSensor.h"
