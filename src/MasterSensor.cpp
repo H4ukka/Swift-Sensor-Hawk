@@ -3,28 +3,36 @@
 
 MasterSensor::MasterSensor (function_pointer adcp) { 
 	adcp_ = adcp;
-	Vector sensor_ports_ ();
+
+	for (short i = 0; i < MAX_CHANNELS; i++) {
+		sensor_channels_[i] = -1;
+	}
 }
 
 MasterSensor::~MasterSensor () {
-
-	/**
-	*
-	* Free up the memory we've used. Stricly not necessary since
-	* repowering the device will reset memory; but it's good
-	* practice. There should never been a need to reset
-	* the MasterSensor class mid-operation.
-	*
-	**/
-	
-	sensor_ports_.vec_free ();
 }
 
-int MasterSensor::measure () {
+int MasterSensor::measure (short channel_index) {
     
-    return adcp_ (3);
+    return adcp_ (sensor_channels_[channel_index]);
 }
 
 void MasterSensor::scan () {
 
+}
+
+void MasterSensor::addChannel (short channel) {
+
+	for (short i = 0; i < MAX_CHANNELS; i++) {
+
+		if (sensor_channels_[i] == -1) {
+			sensor_channels_[i] = channel;
+			break;
+		}
+	}
+}
+
+short MasterSensor::getChannelId (short channel_index) {
+
+	return sensor_channels_[channel_index];
 }

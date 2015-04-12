@@ -1,10 +1,9 @@
 #ifndef MASTER_SENSOR_H
 #define MASTER_SENSOR_H
 
-#include "vector.h"
+#define MAX_CHANNELS 5
 
 /* Typedef for function pointers */
-
 typedef int (*function_pointer)(short);
 
 class MasterSensor {
@@ -13,12 +12,15 @@ public:
     ~MasterSensor ();
 
     /* Methods */
-    int measure ();
+    int measure (short);
     void scan ();
+    void addChannel (short);
+
+    short getChannelId (short);
 
 private:
     function_pointer adcp_;
-    Vector sensor_ports_;
+    short sensor_channels_[MAX_CHANNELS];
 };
 
 #endif
