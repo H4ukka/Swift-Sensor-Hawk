@@ -34,9 +34,9 @@ ScreenDrawer Screen2;
 
 void setup () {
 
-	analogReference(INTERNAL2V56);
+    analogReference(INTERNAL2V56);
 
-	LCD0_.InitLCD();
+    LCD0_.InitLCD();
 
     SensorMaster.addChannel(3);
     SensorMaster.addChannel(4);
@@ -45,8 +45,8 @@ void setup () {
     Screen0.draw_panel ("MAIN_GRAPH");
 
     Screen0.set_color(DEFAULT_RED);
-	// Screen1.set_color(DEFAULT_GREEN);
-	// Screen2.set_color(DEFAULT_YELLOW);
+    // Screen1.set_color(DEFAULT_GREEN);
+    // Screen2.set_color(DEFAULT_YELLOW);
 }
 
 void loop () {
