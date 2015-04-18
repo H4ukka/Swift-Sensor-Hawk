@@ -2,11 +2,11 @@
 
 
 MasterSensor::MasterSensor (function_pointer adcp) { 
-	adcp_ = adcp;
+    adcp_ = adcp;
 
-	for (short i = 0; i < MAX_CHANNELS; i++) {
-		sensor_channels_[i] = -1;
-	}
+    for (short i = 0; i < MAX_CHANNELS; i++) {
+        sensor_channels_[i] = -1;
+    }
 }
 
 MasterSensor::~MasterSensor () {
@@ -23,16 +23,16 @@ void MasterSensor::scan () {
 
 void MasterSensor::addChannel (short channel) {
 
-	for (short i = 0; i < MAX_CHANNELS; i++) {
+    for (short i = 0; i < MAX_CHANNELS; i++) {
 
-		if (sensor_channels_[i] == -1) {
-			sensor_channels_[i] = channel;
-			break;
-		}
-	}
+        if (sensor_channels_[i] == -1) {
+            sensor_channels_[i] = channel;
+            break;
+        }
+    }
 }
 
 short MasterSensor::getChannelId (short channel_index) {
 
-	return sensor_channels_[channel_index];
+    return sensor_channels_[channel_index];
 }

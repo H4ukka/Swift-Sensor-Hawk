@@ -38,9 +38,13 @@ const int chipSelect = 53;
 
 void setup () {
 
+<<<<<<< HEAD
     //analogReference(INTERNAL2V56);
 
     Serial.begin(9600);
+=======
+    analogReference(INTERNAL2V56);
+>>>>>>> origin/master
 
     LCD0_.InitLCD();
 
@@ -53,6 +57,7 @@ void setup () {
     Screen0.set_color(DEFAULT_RED);
     // Screen1.set_color(DEFAULT_GREEN);
     // Screen2.set_color(DEFAULT_YELLOW);
+<<<<<<< HEAD
     //Serial.print("Initializing SD card...");
 
     // // see if the card is present and can be initialized:
@@ -62,6 +67,8 @@ void setup () {
     //     return;
     // }
     // Serial.println("card initialized.");
+=======
+>>>>>>> origin/master
 }
 
 void loop () {

@@ -8,7 +8,7 @@ extern uint8_t Sinclair_Inverted_S[];
 
 ScreenDrawer::ScreenDrawer () {
 
-	step_ = 0;
+    step_ = 0;
     first_ = true;
 
     axis_min_ = 0;
@@ -17,7 +17,7 @@ ScreenDrawer::ScreenDrawer () {
 
 void ScreenDrawer::clear_redraw_grid () {
 
-	LCD0_.setColor(DARK_GRAY);
+    LCD0_.setColor(DARK_GRAY);
     LCD0_.fillRect(41,1,398,119);
 
     draw_graph_grid ();
@@ -25,7 +25,7 @@ void ScreenDrawer::clear_redraw_grid () {
 
 void ScreenDrawer::draw_graph_frame () {
 
-	LCD0_.setColor(DARK_GRAY);
+    LCD0_.setColor(DARK_GRAY);
     LCD0_.fillRect(0,0,399,120);
 
     LCD0_.setColor(DEFAULT_RED);
@@ -37,7 +37,7 @@ void ScreenDrawer::draw_graph_frame () {
 
 void ScreenDrawer::draw_graph_grid () {
 
-	LCD0_.setColor(GRAY);
+    LCD0_.setColor(GRAY);
 
     // Vertical lines
     for (int i = 1; i <= 17; ++i) {
@@ -65,7 +65,7 @@ void ScreenDrawer::draw_axis () {
 
 void ScreenDrawer::draw_graph (short y_value) {
 
-	LCD0_.setColor(channel_R_, channel_G_, channel_B_);
+    LCD0_.setColor(channel_R_, channel_G_, channel_B_);
 
     if (first_) {
 
@@ -88,18 +88,18 @@ void ScreenDrawer::draw_graph (short y_value) {
 
 void ScreenDrawer::draw_panel (String panel_name) {
 
-	if (panel_name == "MAIN_GRAPH") {
-		draw_graph_frame ();
-		draw_graph_grid ();
+    if (panel_name == "MAIN_GRAPH") {
+        draw_graph_frame ();
+        draw_graph_grid ();
         draw_axis ();
-	}else if (panel_name == "") {
+    }else if (panel_name == "") {
 
-	}
+    }
 }
 
 void ScreenDrawer::step_forward () {
 
-	step_+=0.1;
+    step_+=0.1;
 }
 
 void ScreenDrawer::draw_sensor_box (short xpos, short ypos, short value) {
