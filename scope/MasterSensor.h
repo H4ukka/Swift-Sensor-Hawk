@@ -14,20 +14,21 @@ public:
     ~MasterSensor ();
 
     /* Methods */
-    void measure (short);
+    bool measure (short);
     void scan ();
     void addChannel (short, short, short, short);
     void setChannelColor (short, short, short, short);
     void setLimit (short, short);
     void setMultiplier (short, float);
 
-    bool valuesBelowLimits ();
-
     short getChannelId (short);
 
     Channel * getChannel (short);
 
 private:
+
+    float convertd (short);
+
     function_pointer adcp_;
 
     short next_free_channel_;

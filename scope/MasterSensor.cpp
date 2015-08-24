@@ -9,19 +9,13 @@ MasterSensor::MasterSensor (function_pointer adcp) {
 MasterSensor::~MasterSensor () {
 }
 
-void MasterSensor::measure (short channel_index) {
+bool MasterSensor::measure (short channel_index) {
 
     short ch_value = adcp_ (channels_[channel_index].id);
     
     channels_[channel_index].value = ch_value;
 
-    if(channels_[channel_index].min > ch_value) {
-
-        channels_[channel_index].min = ch_value;
-    }else if(channels_[channel_index].max < ch_value) {
-
-        channels_[channel_index].max = ch_value;
-    }
+    return false;
 }
 
 void MasterSensor::scan () {
@@ -48,10 +42,8 @@ void MasterSensor::addChannel (short channel, short r, short g, short b) {
         channels_ [next_free_channel_].min = 10000;
         channels_ [next_free_channel_].max = 0;
 
-        channels_ [next_free_channel_].multiplier = 1.318392;
-        channels_ [next_free_channel_].offset = 502;
-
-        channels_ [next_free_channel_].overLimit = false;
+        channels_ [next_free_channel_].multiplier = 1;
+        channels_ [next_free_channel_].offset = 0;
 
         next_free_channel_ ++;
     }
@@ -77,21 +69,6 @@ Channel* MasterSensor::getChannel (short channel_index) {
     return &channels_ [channel_index];
 }
 
-bool MasterSensor::valuesBelowLimits () {
-
-    bool underLimits = true;
-
-    for (int i = 0; i < next_free_channel_; i++) {
-
-        if(channels_ [i].limit < channels_ [i].valueAsDegrees()) {
-
-            channels_ [i].overLimit = true;
-            underLimits = false;
-        }else{
-            
-            channels_ [i].overLimit = false;
-        }
-    }
-
-    return underLimits;
+float MasterSensor::convertd (short channel_index) {
+    return (channels_ [channel_index].offset - channels_ [channel_index].value) * channels_ [channel_index].multiplier;
 }

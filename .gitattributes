@@ -15,3 +15,9 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+#folders
+/tests
+/scope
+/colours
+/swift_sensor_hawk

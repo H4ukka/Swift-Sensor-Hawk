@@ -29,7 +29,7 @@ public:
 
     void set_color (short,short,short);
 
-    bool is_drawn;
+    bool is_drawn_;
 
 private:
     void clear_redraw_grid ();

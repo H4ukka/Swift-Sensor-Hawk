@@ -22,13 +22,6 @@ struct Channel {
     short value;
     short min;
     short max;
-
-    bool overLimit;
-
-    float valueAsDegrees () {
-
-        return (offset - value) * multiplier;
-    }
 };
 
 #endif

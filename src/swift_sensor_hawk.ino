@@ -1,152 +1,204 @@
 /*
     NAME:   Swift Sensor Hawk
-    DATE:   25.02.2015  
-    VER:    v0r0
-
-    DESC:
-
-        Description goes here.
-    
+    DATE:   25.02.2015 (start) / 20.8.2015 (last)
+    VER:    v0r2 
 
     -----------------------
-    Copyright stuff here
+    MIT License
     -----------------------
-    laine.antti.e@gmail.com
+    author: laine.antti.e@gmail.com
 
-    TODO:
-    - 
 */
 
-#include <UTFT.h>
+#include <avr/interrupt.h>
+#include <avr/pgmspace.h>
+
+#include "waves.h"
+#include "beeps.h"
+#include "led.h"
+
 #include <SPI.h>
-#include <SD.h>
+#include <SdFat.h>
+#include <UTFT.h>
 
 #include "colors.h"
 #include "ScreenDrawer.h"
 #include "MasterSensor.h"
-#include "MasterButton.h"
 #include "hardware.h"
 
 UTFT LCD0_(CTE32W,38,39,40,41);
 
-
 MasterSensor SensorMaster (g_get_adc);
-MasterButton ButtonMaster;
 ScreenDrawer Screen;
-
-const int chipSelect = 53;
 
 short tc = 0;
 short gc = 0;
+short ac = 0;
+
+bool alert = false;
+bool reset = false;
+bool below_limit = true;
+bool af = false;
 
 void setup () {
 
-    Serial.begin(9600);
-
     LCD0_.InitLCD();
 
-    SensorMaster.addChannel(3, DEFAULT_RED);
-    // SensorMaster.addChannel(4, DEFAULT_GREEN);
-    // SensorMaster.addChannel(5, DEFAULT_YELLOW);
+    Serial.begin(9600);
 
-    Screen.draw_view ("MAIN_VIEW");
+    SensorMaster.addChannel(0, RED_4);
+    SensorMaster.addChannel(2, GREEN_4);
+    SensorMaster.addChannel(4, BLUE_4);
 
-    //Serial.print("Initializing SD card...");
-
-    // // see if the card is present and can be initialized:
-    // if (!SD.begin(chipSelect)) {
-    //     Serial.println("Card failed, or not present");
-    //     // don't do anything more:
-    //     return;
-    // }
-    // Serial.println("card initialized.");
+    SensorMaster.setLimit(0,28);
+    SensorMaster.setLimit(1,60);
+    SensorMaster.setLimit(2,65);
 
     cli();
 
     TCCR3A = 0;
-    TCCR3B = (1 << CS31);
-    TIMSK3 = (1 << TOIE3);
+    TCCR3B = (1 << CS31);								// 8 prescaler
+    TIMSK3 = (1 << TOIE3);								// Timer3 Overflow Interrupt
 
-    // DDRK = 0b00000000;
+    /**
+    * AUDIO - v1
+    **/
+
+    TCCR1B  = (1 << CS10);                              // Set prescaler to full 16MHz
+    TCCR1A |= (1 << COM1A1);                            // PWM pin to go low when TCNT1=OCR1A
+    TCCR1A |= (1 << WGM10);                             // Put timer into 8-bit fast PWM mode
+    TCCR1B |= (1 << WGM12);                             // CTC Mode enable
+
+    TCCR2A = 0;                                         // We need no options in control register A
+    TCCR2B = (1 << CS21);                               // Set prescaler to divide by 8
+    TIMSK2 = (1 << OCIE2A);                             // Set timer to call ISR when TCNT2 = OCRA2
+
+    // Button pins
+    DDRK = 0b11111000;
+
+    // LED and AUDIO pins
+    DDRB = DDRB | B00110000;
 
     sei();
+
+    Screen.draw_view ("MAIN_VIEW");
 
 }
 
 void loop () {
 
-	// short portk = PINK;
+    short portk = PINK;
 
-	// if (portk & 0b0000001 && Screen.view() != LEFT) {
-	// 	Screen.draw_view ("LEFT_VIEW");
-	// }
-	// else if (portk & 0b0000010 && Screen.view() != CENTER) {
-	// 	Screen.draw_view ("MAIN_VIEW");
-	// }
-	// else if (portk & 0b0000100 && Screen.view() != RIGHT) {
-	// 	Screen.draw_view ("RIGHT_VIEW");
-	// }
+    if ((portk & 0b00000001) && Screen.view() != LEFT) {
+        Screen.draw_view ("LEFT_VIEW");
+    }
+    else if ((portk & 0b00000010) && Screen.view() != CENTER) {
+        Screen.draw_view ("MAIN_VIEW");
+    }
+    else if ((portk & 0b0000100) && Screen.view() != RIGHT) {
+        alert_reset();
 
+        if(!below_limit) {
+        	led_on(RED);
+        }
+    }
 
-    // Screen.draw_graph( 120-(SensorMaster.measure(0)-380), SensorMaster.getChannel(0));
-    // Screen.draw_sensor_box (20,140,(502 - SensorMaster.measure(0))*1.494, SensorMaster.getChannel(0));
+    if (!below_limit && !af) {
+        alert_on();
+        af = true;
+    }
 
-    // String dataString = (String)SensorMaster.measure(0);
+    if (below_limit && reset) {
+        led_off(RED);
+        af = false;
+        reset = false;
+    }
 
-    // // open the file. note that only one file can be open at a time,
-    // // so you have to close this one before opening another.
-    // File dataFile = SD.open("datalog.txt", FILE_WRITE);
+    if(Screen.is_drawn) {
 
-    // // if the file is available, write to it:
-    // if (dataFile) {
-    //     dataFile.println(dataString);
-    //     dataFile.close();
-    //     // print to the serial port too:
-    //     Serial.println(dataString);
-    // }
-    // // if the file isn't open, pop up an error:
-    // else {
-    //     Serial.println("error opening datalog.txt");
-    // }
+        if (tc == 24 && Screen.view() == CENTER) {
+
+            Screen.draw_sensor_box (58, 130, SensorMaster.getChannel(0));
+            Screen.draw_sensor_box (172, 130, SensorMaster.getChannel(1));
+            Screen.draw_sensor_box (286, 130, SensorMaster.getChannel(2));
+
+            Screen.draw_stats_box (58, 181, SensorMaster.getChannel(0));
+            Screen.draw_stats_box (172, 181, SensorMaster.getChannel(1));
+            Screen.draw_stats_box (286, 181, SensorMaster.getChannel(2));
+        }
+
+        if(gc == 8 && (Screen.view() == CENTER || Screen.view() == LEFT)) {
+
+            SensorMaster.measure(0);
+            SensorMaster.measure(1);
+            SensorMaster.measure(2);
+
+            if (!SensorMaster.valuesBelowLimits()) {
+                below_limit = false;
+            }else{
+                below_limit = true;
+            }
+
+            Screen.draw_graph(SensorMaster.getChannel(0));
+            Screen.draw_graph(SensorMaster.getChannel(1));
+            Screen.draw_graph(SensorMaster.getChannel(2));
+
+            Screen.draw_limit(SensorMaster.getChannel(0));
+            Screen.draw_limit(SensorMaster.getChannel(1));
+            Screen.draw_limit(SensorMaster.getChannel(2));
+
+            Screen.step_forward();
+        }
+    }
+}
+
+void alert_on () {
+    sound = true;
+    alert = true;
+    OCR2A = 20;
+}
+
+void alert_reset () {
+
+    sound = false;
+    alert = false;
+    reset = true;
 }
 
 ISR(TIMER3_OVF_vect) {
 
-    SensorMaster.measure(0);
-    // SensorMaster.measure(1);
-    // SensorMaster.measure(2);
+    if(Screen.is_drawn) {
 
-    if(Screen.is_drawn_ && Screen.view() == CENTER) {
+        if (tc == 24 && Screen.view() == CENTER) {
+            tc = 0;
 
-	    if(gc == 8) {
+        }else if (Screen.view() == CENTER){
+            tc++;
+        }
 
-	        Screen.draw_graph(SensorMaster.getChannel(0));
-	        // Screen.draw_graph(SensorMaster.getChannel(1));
-	        // Screen.draw_graph(SensorMaster.getChannel(2));
+        if(gc == 8 && (Screen.view() == CENTER || Screen.view() == LEFT)) {
+            gc = 0;
+        }else if (Screen.view() == CENTER || Screen.view() == LEFT){
+            gc++;
+        }
 
-	        Screen.step_forward();
-
-	        gc = 0;
-	    }else{
-
-	        gc++;
-	    }
-
-	    if (tc == 25) {
-
-	        Screen.draw_sensor_box (0, 125, SensorMaster.getChannel(0));
-	        // Screen.draw_sensor_box (100, 125, SensorMaster.getChannel(1));
-	        // Screen.draw_sensor_box (200, 125, SensorMaster.getChannel(2));
-
-	        Screen.draw_stats_box (0, 176, SensorMaster.getChannel(0));
-	        // Screen.draw_stats_box (100, 176, SensorMaster.getChannel(1));
-	        // Screen.draw_stats_box (200, 176, SensorMaster.getChannel(2));
-
-	        tc = 0;
-	    }else{
-
-	        tc++;
-	    }
-	}
+        if (alert && ac > 1) {
+            sound = !sound;
+            ac = 0;
+            led_toggle(RED);
+        }else{
+            ac++;
+        }
+    }
 }
+
+ISR(TIMER2_COMPA_vect) {
+
+    static byte index = 0;
     
+    if (sound) {
+        OCR1AL = pgm_read_byte(&WAVES[1][index++]);
+        asm("NOP;NOP");
+        TCNT2 = 6;
+    }
+}   

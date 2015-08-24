@@ -15,13 +15,13 @@ ScreenDrawer::ScreenDrawer () {
     step_ = 0;
 
     axis_min_ = 0;
-    axis_max_ = 99;
+    axis_max_ = 1000;
 
     c_div = 20;
 
     pixel_ratio_ = 1;
 
-    is_drawn = false;
+    is_drawn_ = false;
     reset_graph_on_update_ = false;
 }
 
@@ -43,7 +43,7 @@ void ScreenDrawer::draw_graph_frame () {
         LCD0_.fillRect(0,0,399,_screen_height);
     }
 
-    LCD0_.setColor(BLUE_GRAY);
+    LCD0_.setColor(DEFAULT_RED);
 
     if (current_view_ == LEFT) {
         LCD0_.fillRect(0,0,40,_screen_height - 1);
@@ -51,7 +51,7 @@ void ScreenDrawer::draw_graph_frame () {
         LCD0_.fillRect(0,0,40,_screen_height);
     }
 
-    LCD0_.setColor(GRAY);
+    LCD0_.setColor(DARK_RED);
 
     if (current_view_ == LEFT) {
         LCD0_.drawRect(40,0,399,_screen_height - 1);
@@ -81,7 +81,7 @@ void ScreenDrawer::draw_axis () {
     for (int i = 1; i < _screen_height / 20; ++i) {
 
         LCD0_.setColor(WHITE);
-        LCD0_.setBackColor(BLUE_GRAY);
+        LCD0_.setBackColor(DEFAULT_RED);
         LCD0_.setFont(Sinclair_Inverted_S);
         LCD0_.printNumI(((c_div*_divs)/(_screen_height / 20))*i, 8, _screen_height-i*20-4,3);
     }
@@ -92,10 +92,7 @@ void ScreenDrawer::draw_graph (Channel *channel) {
     LCD0_.setColor(channel->R, channel->G, channel->B);
 
     //convert y to degrees
-    float adj_value = convertd(channel->value, channel);
-
-    //convert degrees to pixels
-    adj_value *= pixel_ratio_;
+    float adj_value = channel->value;
 
     //constrain pixel range
     adj_value = constrain(adj_value, 1, _screen_height - 1);
@@ -115,7 +112,6 @@ void ScreenDrawer::draw_graph (Channel *channel) {
 
         if (41 + step_ < 400) {
             LCD0_.drawLine(channel->prev_X, channel->prev_Y,41+step_,_screen_height-adj_value);
-            LCD0_.drawLine(channel->prev_X, channel->prev_Y+1,41+step_,_screen_height-adj_value+1);
         }
     }
 
@@ -127,7 +123,7 @@ void ScreenDrawer::draw_view (String panel_name) {
 
     cli();
 
-    is_drawn = false;
+    is_drawn_ = false;
     LCD0_.clrScr();
 
     if (panel_name == "MAIN_VIEW") {
@@ -144,7 +140,7 @@ void ScreenDrawer::draw_view (String panel_name) {
         draw_graph_grid ();
         draw_axis ();
         draw_legend();
-        is_drawn = true;
+        is_drawn_ = true;
 
     }else if (panel_name == "LEFT_VIEW") {
 
@@ -161,12 +157,12 @@ void ScreenDrawer::draw_view (String panel_name) {
         draw_graph_grid ();
         draw_axis ();
 
-        is_drawn = true;
+        is_drawn_ = true;
 
     }else if (panel_name == "RIGHT_VIEW") {
 
         current_view_ = RIGHT;
-        is_drawn = true;
+        is_drawn_ = true;
     }
 
     sei();
@@ -186,15 +182,15 @@ void ScreenDrawer::step_forward () {
 
 void ScreenDrawer::draw_sensor_box (short xpos, short ypos, Channel *channel) {
 
+    xpos += 45;
+
     float adj_value = convertd(channel->value, channel);
 
-    int display_value = (int) (adj_value + 0.5);
-
     LCD0_.setBackColor(channel->R, channel->G, channel->B);
-    LCD0_.setColor(WHITE);
+    LCD0_.setColor(BLACK);
     LCD0_.setFont(ArialNumFontPlus);
 
-    LCD0_.printNumI(display_value, xpos, ypos, 3, '0');
+    LCD0_.printNumI(adj_value, xpos, ypos, 3, '0');
 
     if(step_ >= 357) {
 
@@ -209,10 +205,12 @@ void ScreenDrawer::draw_sensor_box (short xpos, short ypos, Channel *channel) {
 
 void ScreenDrawer::draw_stats_box (short xpos, short ypos, Channel *channel) {
 
+    xpos += 45;
+
     float mean_value = channel->total / channel->count;
 
     LCD0_.setBackColor(channel->R, channel->G, channel->B);
-    LCD0_.setColor(WHITE);
+    LCD0_.setColor(BLACK);
     LCD0_.setFont(arial_normal);
 
     LCD0_.printNumF(mean_value, 1, xpos, ypos, '.', 6);
@@ -228,24 +226,24 @@ float ScreenDrawer::convertd (short value, Channel *channel) {
 }
 
 void ScreenDrawer::draw_legend () {
-    LCD0_.setColor(BLUE_GRAY);
+    LCD0_.setColor(DEFAULT_RED);
     LCD0_.fillRect(0,120,39,239);
 
     LCD0_.setColor(BLACK);
-    LCD0_.drawLine(0,180,39,180);
-    LCD0_.drawLine(0,197,39,197);
-    LCD0_.drawLine(0,214,39,214);
-    LCD0_.drawLine(0,231,39,231);
+    LCD0_.drawLine(0,175,39,175);
+    LCD0_.drawLine(0,192,39,192);
+    LCD0_.drawLine(0,209,39,209);
+    LCD0_.drawLine(0,226,39,226);
 
     LCD0_.setColor(WHITE);
 
     LCD0_.setFont(franklingothic_normal);
-    LCD0_.print("`C",0,146);
+    LCD0_.print("`C",0,141);
 
     LCD0_.setFont(Sinclair_Inverted_S);
-    LCD0_.print("AVG",8,185);
-    LCD0_.print("MIN",8,202);
-    LCD0_.print("MAX",8,219);
+    LCD0_.print("AVG",8,180);
+    LCD0_.print("MIN",8,197);
+    LCD0_.print("MAX",8,214);
 }
 
 void ScreenDrawer::draw_limit (Channel *channel) {
